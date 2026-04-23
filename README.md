@@ -338,11 +338,42 @@ the job" panel of the project.
 - **CCF regression is not applicable** — LendingClub has only term loans.
   The EAD module docstring notes this and describes the CCF path for
   revolving portfolios as a methodology extension.
-- **Docker Desktop bug workaround**: Docker 4.67 on Windows has a broken
-  Unix-socket reparse-point for the Inference and Secrets Engine services
-  that can prevent the engine from starting. Fix: disable "Docker Model
-  Runner" in Settings → Features in development (documented in the build
-  history of this repo).
+- **Docker Desktop Windows Inference-manager bug (4.67 *and* 4.70)**.
+  Docker Desktop tries to create a Unix-socket reparse-point at
+  `%LOCALAPPDATA%\Docker\run\dockerInference` whose target uses a
+  `unix://` path Windows can't resolve. On every startup (even after a
+  factory reset) Docker tries to `remove()` the zombie reparse-point,
+  fails, and crashes with the "An unexpected error occurred" dialog.
+  **Factory reset does NOT fix this — the feature is re-enabled on
+  every launch.** The definitive workaround:
+  ```powershell
+  # With Docker Desktop fully killed:
+  Get-Process "Docker Desktop","com.docker*" -EA SilentlyContinue | Stop-Process -Force
+
+  # 1. Disable the Inference manager in settings-store.json
+  $p = "$env:APPDATA\Docker\settings-store.json"
+  $j = Get-Content $p -Raw | ConvertFrom-Json
+  $j.EnableDockerAI = $false
+  $j.InferenceCanUseGPUVariant = $false
+  foreach ($f in 'EnableModelRunner','EnableDockerModelRunner') {
+    if ($j.PSObject.Properties.Name -notcontains $f) {
+      $j | Add-Member NoteProperty $f $false
+    }
+  }
+  $j | ConvertTo-Json -Depth 10 | Set-Content $p -Encoding utf8
+
+  # 2. Rename the poisoned run/ dir (can't delete via normal tools
+  #    because its reparse-point target is invalid)
+  Rename-Item "$env:LOCALAPPDATA\Docker\run" `
+              "run.broken.$(Get-Date -Format yyyyMMddHHmmss)"
+
+  # 3. Relaunch Docker Desktop
+  Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+  ```
+  Postgres + named volumes survive this (the reset only wipes host-side
+  Docker state, not the `postgres_data` volume). **If this doesn't work
+  on your build, install native Postgres for Windows from
+  postgresql.org and flip `config.yml:database.port` from 5433 → 5432.**
 - **Monthly loan_status snapshots are synthesised** from origination +
   final status (LendingClub doesn't ship DPD time-series). The DPD ladder
   ramps 30 → 60 → 90 → 120 in the final four months of a defaulted loan;
