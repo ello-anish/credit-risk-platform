@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: credit-risk-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: credit_risk
+      POSTGRES_USER: credit_user
+      POSTGRES_PASSWORD: credit_pass
+    ports:
+      - "5433:5432"   # host 5433 -> container 5432 (5432 often occupied)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U credit_user -d credit_risk"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

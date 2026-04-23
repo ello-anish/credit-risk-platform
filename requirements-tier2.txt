@@ -1,0 +1,5 @@
+# Tier 2 deps — survival / DeepSurv — installed separately to keep the core light.
+-r requirements.txt
+
+tensorflow==2.16.1
+lifelines==0.28.0

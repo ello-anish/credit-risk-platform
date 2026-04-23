@@ -1,0 +1,64 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ---- R ----
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+renv/library/
+renv/staging/
+renv/python/
+renv/local/
+renv/sandbox/
+.Renviron
+*.rds
+
+# ---- MLflow ----
+mlruns/
+mlartifacts/
+
+# ---- Raw data (regenerable, do NOT commit) ----
+data/raw/lending_club_sample_50k.parquet
+data/raw/accepted_*.csv*
+data/raw/rejected_*.csv*
+data/raw/lending-club.zip
+
+# NOTE: data/raw/macro.parquet IS tracked (~100KB, per spec)
+
+# ---- Model artifacts (regenerable) ----
+artifacts/
+**/artifacts/
+*.joblib
+*.pkl
+
+# ---- DB volumes ----
+postgres_data/
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- IDE ----
+.idea/
+.vscode/
+*.swp
+*~

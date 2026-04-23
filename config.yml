@@ -1,0 +1,172 @@
+# credit-risk-platform — central configuration
+# All tunable parameters live here. No magic numbers in code.
+
+project:
+  name: credit-risk-platform
+  version: 0.1.0
+
+paths:
+  raw_data_dir: data/raw
+  lending_club_sample: data/raw/lending_club_sample_50k.parquet
+  macro_data: data/raw/macro.parquet
+  artifacts_dir: artifacts
+  reports_dir: artifacts/reports
+
+# Override to an absolute path if Rscript is not on PATH (e.g. "C:/Program Files/R/R-4.5.2/bin/x64/Rscript.exe").
+# Default "Rscript" resolves from PATH, which is the portable option.
+rscript_path: Rscript
+
+database:
+  host: localhost
+  port: 5433           # 5432 is often taken; use 5433 to avoid conflicts
+  database: credit_risk
+  user: credit_user
+  password: credit_pass
+  schema: credit_risk
+
+data:
+  seed: 42
+  fast_sample_size: 10000     # --fast flag subsamples to this
+  min_expected_rows: 40000    # fail validation if parquet has <40k rows
+  max_expected_rows: 60000    # or >60k rows
+  required_columns:
+    - loan_status
+    - issue_d
+    - grade
+    - sub_grade
+    - fico_range_low
+    - fico_range_high
+    - loan_amnt
+    - funded_amnt
+    - int_rate
+    - dti
+    - annual_inc
+    - recoveries
+    - emp_length
+    - home_ownership
+    - purpose
+    - term
+    - installment
+    - verification_status
+    - addr_state
+    - delinq_2yrs
+    - earliest_cr_line
+    - inq_last_6mths
+    - open_acc
+    - pub_rec
+    - revol_bal
+    - revol_util
+    - total_acc
+
+default:
+  # IFRS 9 / scorecard default definition for LendingClub
+  positive_statuses:
+    - "Charged Off"
+    - "Default"
+    - "Late (31-120 days)"
+    - "Does not meet the credit policy. Status:Charged Off"
+  negative_statuses:
+    - "Fully Paid"
+    - "Does not meet the credit policy. Status:Fully Paid"
+  exclude_statuses:
+    - "Current"
+    - "In Grace Period"
+    - "Late (16-30 days)"
+    - "Issued"
+
+vintages:
+  train_start: "2012-01-01"
+  train_end: "2015-12-31"
+  validation_start: "2016-01-01"
+  validation_end: "2016-12-31"
+  oot_start: "2017-01-01"
+  oot_end: "2018-12-31"
+  drop_before: "2012-01-01"   # pre-2012 vintages dropped (volume / product mix)
+
+observation:
+  pd_horizon_months: 12       # performance window for the 12m PD target
+
+preprocessing:
+  annual_inc_winsor_pct: 0.99 # winsorize income at 99th percentile
+  annual_inc_log_transform: true
+  dti_cap: 100.0              # cap DTI at 100 (handles the few outliers)
+  fico_range: [300, 850]      # valid range
+  null_rate_threshold: 0.05   # fail QG if any required col >5% null on train
+
+features:
+  iv_min: 0.02                # Information Value filter lower bound
+  iv_max: 0.5                 # upper bound (too high => possible leakage)
+  target_feature_count: 30
+
+pd_python:
+  baseline:
+    model: logistic_regression
+    C: 1.0
+    penalty: l2
+    max_iter: 1000
+    class_weight: balanced
+  challenger:
+    model: gradient_boosting
+    n_estimators: 200
+    max_depth: 3
+    learning_rate: 0.05
+    subsample: 0.9
+  calibration:
+    method: isotonic
+    cv_folds: 5
+
+pd_r:
+  iv_min: 0.02
+  iv_max: 0.5
+  pdo: 20                     # points to double odds
+  base_points: 600
+  base_odds: 50               # base odds at base_points
+
+lgd_r:
+  # Beta regression on (LGD) with boundary adjustment (y*(n-1)+0.5)/n
+  boundary_adjustment: true
+  link: logit
+  min_defaults_required: 1000 # if fewer defaults available, warn
+
+ead:
+  # For LendingClub term loans: EAD = outstanding principal at default.
+  # CCF regression not applicable (no revolving credit in this portfolio).
+  method: outstanding_principal
+
+ecl:
+  sicr_pd_ratio: 2.0            # PD(t)/PD(origination) > 2x => Stage 2
+  sicr_dpd_threshold: 30        # 30+ DPD => Stage 2
+  default_dpd_threshold: 90     # 90+ DPD => Stage 3
+  lgd_floor_stage3: 0.05        # regulatory LGD floor for Stage 3
+  lifetime_pd_method: geometric # Tier 1; Tier 2 replaces with survival curves
+
+stress:
+  vasicek:
+    macro_features:
+      - unemployment_delta
+      - gdp_growth
+      - hpi_change
+    fit_granularity: vintage_quarter
+
+reconciliation:
+  # Thresholds for tests/test_reconciliation.py (the CI gate)
+  auc_abs_diff_max: 0.02
+  spearman_min: 0.90
+  mean_abs_prob_diff_max: 0.03
+  ks_distribution_max: 0.05
+
+mlflow:
+  tracking_uri: ./mlruns
+  experiments:
+    pd: pd_v1
+    lgd: lgd_v1
+    ecl: ecl_v1
+
+service:
+  host: 0.0.0.0
+  port: 8000
+  model_version: "v1"
+
+logging:
+  level: INFO
+  format: "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
