@@ -6,6 +6,10 @@ one-factor link, a FastAPI scoring service, a Streamlit analyst dashboard,
 and a reconciliation **CI gate** that fails the build if the two modelling
 tracks disagree beyond documented tolerances.
 
+![Python (sklearn) vs R (scorecard) PD model reconciliation](reconciliation/artifacts/reconciliation_plot.png)
+
+*Python (sklearn) vs R (scorecard) PD model reconciliation — Spearman 0.928, |AUC diff| 0.007, all tolerances passed.*
+
 The core differentiator is the dual-language implementation: every major
 model is built in **both Python and R**, and the two tracks are statistically
 reconciled. This mirrors how model validation actually works at banks —
