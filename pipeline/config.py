@@ -32,6 +32,16 @@ def _find_repo_root(start: Path) -> Path:
 
 REPO_ROOT: Path = _find_repo_root(Path(__file__).parent)
 
+# Auto-load .env at repo root so `os.environ.get("DB_PASSWORD", ...)` picks
+# up user values without requiring an explicit load in every entry point.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(REPO_ROOT / ".env", override=False)
+except ImportError:
+    # python-dotenv not installed — fall through; env vars set at shell level
+    # still work.
+    pass
+
 
 @lru_cache(maxsize=1)
 def load_config() -> Dict[str, Any]:
@@ -44,17 +54,24 @@ CFG: Dict[str, Any] = load_config()
 
 
 def db_url() -> str:
-    """Return the SQLAlchemy Postgres URL, honoring env-var overrides.
+    """Return the SQLAlchemy Postgres URL.
 
-    Env vars ``DB_HOST``, ``DB_PORT``, ``DB_USER``, ``DB_PASSWORD``, ``DB_NAME``
-    take precedence over config.yml (for CI / container overrides).
+    ``DB_PASSWORD`` **must** be set in the environment (typically via ``.env``
+    — see ``.env.example``). Every other knob (host, port, user, name) has a
+    non-sensitive default in ``config.yml`` and can be overridden by the
+    matching ``DB_*`` env var.
     """
     db = CFG["database"]
     host = os.environ.get("DB_HOST", db["host"])
     port = os.environ.get("DB_PORT", db["port"])
     user = os.environ.get("DB_USER", db["user"])
-    pw = os.environ.get("DB_PASSWORD", db["password"])
     name = os.environ.get("DB_NAME", db["database"])
+    pw = os.environ.get("DB_PASSWORD")
+    if not pw:
+        raise RuntimeError(
+            "DB_PASSWORD is not set. Copy .env.example to .env and fill in "
+            "DB_PASSWORD, or export DB_PASSWORD in your shell."
+        )
     return f"postgresql+psycopg2://{user}:{pw}@{host}:{port}/{name}"
 
 

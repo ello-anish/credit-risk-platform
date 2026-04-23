@@ -16,6 +16,7 @@ env/
 .mypy_cache/
 .coverage
 htmlcov/
+.ipynb_checkpoints/
 
 # ---- R ----
 .Rproj.user/
@@ -23,11 +24,18 @@ htmlcov/
 .RData
 .Ruserdata
 *.Rproj
+# renv dirs — we don't currently use renv (removed in favour of direct user-
+# library install), but ignore its scaffolding if a future branch reintroduces it.
 renv/library/
 renv/staging/
 renv/python/
 renv/local/
 renv/sandbox/
+R/renv/library/
+R/renv/staging/
+R/renv/python/
+R/renv/local/
+R/renv/sandbox/
 .Renviron
 *.rds
 
@@ -35,13 +43,12 @@ renv/sandbox/
 mlruns/
 mlartifacts/
 
-# ---- Raw data (regenerable, do NOT commit) ----
+# ---- Raw data — regenerable, do NOT commit ----
 data/raw/lending_club_sample_50k.parquet
+data/raw/macro.parquet
 data/raw/accepted_*.csv*
 data/raw/rejected_*.csv*
 data/raw/lending-club.zip
-
-# NOTE: data/raw/macro.parquet IS tracked (~100KB, per spec)
 
 # ---- Derived feature parquets (regenerable via pipeline/ingest.py) ----
 data/features/
@@ -49,14 +56,23 @@ data/features/
 # ---- Claude Code local settings ----
 .claude/settings.local.json
 
-# ---- Model artifacts (regenerable) ----
-artifacts/
-**/artifacts/
+# ---- Large model binaries (joblibs / pkls are regenerable) ----
 *.joblib
 *.pkl
+models/*/artifacts/*.joblib
+models/*/artifacts/*.pkl
+
+# ---- Large artifact parquets (regenerable — small .md / .json / .png reports are committed) ----
+**/artifacts/*.parquet
+
+# ---- Top-level scratch artifacts dir (e.g. artifacts/ecl) ----
+/artifacts/
 
 # ---- DB volumes ----
 postgres_data/
+
+# ---- Logs ----
+*.log
 
 # ---- OS ----
 .DS_Store

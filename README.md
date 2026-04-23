@@ -227,6 +227,9 @@ tests/test_stress.py       .............  3 passed
 ## Quickstart
 
 ```bash
+# 0. Copy the env template and edit — required before docker compose up
+cp .env.example .env         # then open .env and set DB_PASSWORD etc.
+
 # 1. Bring up Postgres (docker-compose)
 docker compose up -d
 

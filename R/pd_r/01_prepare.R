@@ -27,13 +27,18 @@ cfg <- yaml::read_yaml(file.path(REPO_ROOT, "config.yml"))
 
 connect_db <- function(cfg) {
   db <- cfg$database
+  pw <- Sys.getenv("DB_PASSWORD", unset = "")
+  if (nchar(pw) == 0) {
+    stop("DB_PASSWORD is not set. Copy .env.example to .env and fill it in, ",
+         "or export DB_PASSWORD in your shell before running.")
+  }
   DBI::dbConnect(
     RPostgres::Postgres(),
     host     = Sys.getenv("DB_HOST", db$host),
     port     = as.integer(Sys.getenv("DB_PORT", db$port)),
     dbname   = Sys.getenv("DB_NAME", db$database),
     user     = Sys.getenv("DB_USER", db$user),
-    password = Sys.getenv("DB_PASSWORD", db$password)
+    password = pw
   )
 }
 

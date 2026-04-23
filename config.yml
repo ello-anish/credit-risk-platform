@@ -17,11 +17,15 @@ paths:
 rscript_path: Rscript
 
 database:
+  # Non-sensitive defaults only. The password MUST come from the
+  # DB_PASSWORD environment variable (set in .env — see .env.example).
+  # pipeline/config.py:db_url() applies DB_HOST / DB_PORT / DB_USER /
+  # DB_PASSWORD / DB_NAME env overrides; R/*/01_prepare.R mirrors this
+  # via Sys.getenv().
   host: localhost
   port: 5433           # 5432 is often taken; use 5433 to avoid conflicts
   database: credit_risk
   user: credit_user
-  password: credit_pass
   schema: credit_risk
 
 data:

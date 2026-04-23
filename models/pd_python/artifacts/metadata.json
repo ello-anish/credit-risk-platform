@@ -1,0 +1,93 @@
+{
+  "generated_at": "2026-04-24T03:32:12.147817",
+  "feature_count": 9,
+  "features": [
+    "loan_amnt__woe",
+    "int_rate__woe",
+    "installment__woe",
+    "annual_inc_log__woe",
+    "dti__woe",
+    "inq_last_6mths__woe",
+    "fico_mid__woe",
+    "grade__woe",
+    "verification_status__woe"
+  ],
+  "iv": {
+    "loan_amnt__woe": 0.04106272123727608,
+    "int_rate__woe": 0.4658504123534583,
+    "installment__woe": 0.03828335139301985,
+    "annual_inc_log__woe": 0.02615909363511668,
+    "dti__woe": 0.07761227650165661,
+    "inq_last_6mths__woe": 0.021883454706905885,
+    "fico_mid__woe": 0.12179552737458896,
+    "grade__woe": 0.49408584422583185,
+    "verification_status__woe": 0.048584848302753336
+  },
+  "baseline": {
+    "model": "LogisticRegression (isotonic calibrated on validation)",
+    "C": 1.0,
+    "penalty": "l2"
+  },
+  "challenger": {
+    "model": "GradientBoostingClassifier",
+    "n_estimators": 200,
+    "max_depth": 3
+  },
+  "metrics": {
+    "train": {
+      "baseline": {
+        "auc": 0.705675830466732,
+        "ks": 0.3050172580973701,
+        "gini": 0.411351660933464,
+        "brier": 0.14571907816673063,
+        "n": 17465,
+        "default_rate": 0.19129687947323218
+      },
+      "gbm": {
+        "auc": 0.7283177218311223,
+        "ks": 0.33369090090243586,
+        "gini": 0.4566354436622446,
+        "brier": 0.13792022092591283,
+        "n": 17465,
+        "default_rate": 0.19129687947323218
+      }
+    },
+    "validation": {
+      "baseline": {
+        "auc": 0.6904322391410848,
+        "ks": 0.28420857436761,
+        "gini": 0.3808644782821695,
+        "brier": 0.1700334340179567,
+        "n": 6559,
+        "default_rate": 0.24607409666107638
+      },
+      "gbm": {
+        "auc": 0.6928868106795568,
+        "ks": 0.28565409091079946,
+        "gini": 0.38577362135911364,
+        "brier": 0.17393159686013654,
+        "n": 6559,
+        "default_rate": 0.24607409666107638
+      }
+    },
+    "oot": {
+      "baseline": {
+        "auc": 0.6829016944851547,
+        "ks": 0.2846857882003285,
+        "gini": 0.3658033889703094,
+        "brier": 0.18146891861156805,
+        "n": 5254,
+        "default_rate": 0.26855728968405024
+      },
+      "gbm": {
+        "auc": 0.6844057130390506,
+        "ks": 0.2762005453969065,
+        "gini": 0.36881142607810125,
+        "brier": 0.18805045992360594,
+        "n": 5254,
+        "default_rate": 0.26855728968405024
+      }
+    },
+    "psi_baseline_train_oot": 0.013178805028680013
+  }
+}

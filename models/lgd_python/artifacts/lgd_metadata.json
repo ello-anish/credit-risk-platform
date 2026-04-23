@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-04-24T03:39:27+0530",
+  "features": ["grade", "term_months", "int_rate", "fico_mid", "annual_inc_log", "dti"],
+  "coef_mean": {
+    "(Intercept)": 3.456791,
+    "gradeB": -0.103116,
+    "gradeC": -0.199024,
+    "gradeD": -0.11822,
+    "gradeE": -0.218108,
+    "gradeF": -0.103555,
+    "gradeG": -0.306101,
+    "term_months": 0.003949,
+    "int_rate": -1.2799,
+    "fico_mid": 0.000912,
+    "annual_inc_log": -0.139535,
+    "dti": 0.000911
+  },
+  "coef_precision": {
+    "(phi)": 3.673461
+  },
+  "n_train": 4951,
+  "n_oot": 1411,
+  "train_rmse": "NA",
+  "oot_rmse": 0.0937,
+  "lgd_mean_actual": 0.9196,
+  "lgd_mean_predicted": 0.9158
+}
