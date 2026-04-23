@@ -1,0 +1,35 @@
+# Stress scenarios — macroeconomic shocks applied via the fitted Vasicek link.
+#
+# Shocks are expressed as DELTAS from the macro state at the as-of date
+# (default: 2018-12-31). The Vasicek model maps the macro delta to a
+# portfolio-wide PD shift, which is applied to every loan's PD before ECL
+# is recomputed.
+
+scenarios:
+  - name: baseline
+    description: "Current macro levels — no shock."
+    shocks:
+      unemployment_delta: 0.0     # percentage points
+      gdp_growth: 0.0             # replacement value (NOT a delta here)
+      hpi_change: 0.0             # YoY % change
+
+  - name: adverse
+    description: "Fed CCAR 'adverse' analogue."
+    shocks:
+      unemployment_delta: 3.0     # +3 pp
+      gdp_growth: -2.0            # -2 % replacement
+      hpi_change: -15.0           # -15 % YoY
+
+  - name: severely_adverse
+    description: "Fed CCAR 'severely adverse' analogue."
+    shocks:
+      unemployment_delta: 5.0     # +5 pp
+      gdp_growth: -5.0            # -5 % replacement
+      hpi_change: -25.0           # -25 % YoY
+
+  - name: india_rate_shock
+    description: "India-specific: +200 bps repo, INR -10 %, Nifty -30 %."
+    shocks:
+      unemployment_delta: 1.5     # proxy
+      gdp_growth: -1.0            # India slowdown proxy
+      hpi_change: -8.0            # residential property proxy

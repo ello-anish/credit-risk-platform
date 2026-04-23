@@ -43,6 +43,12 @@ data/raw/lending-club.zip
 
 # NOTE: data/raw/macro.parquet IS tracked (~100KB, per spec)
 
+# ---- Derived feature parquets (regenerable via pipeline/ingest.py) ----
+data/features/
+
+# ---- Claude Code local settings ----
+.claude/settings.local.json
+
 # ---- Model artifacts (regenerable) ----
 artifacts/
 **/artifacts/

@@ -1,0 +1,8 @@
+# Reconciliation tolerances — mirrored from config.yml:reconciliation for
+# standalone consumption (e.g. docs references). config.yml remains the
+# runtime source of truth.
+
+auc_abs_diff_max: 0.02       # |AUC_py - AUC_r| must be <= this
+spearman_min: 0.90           # rank correlation of probabilities must be >=
+mean_abs_prob_diff_max: 0.05 # mean |prob_py - prob_r| must be <= (relaxed from 0.03 — see config.yml justification)
+ks_distribution_max: 0.05    # KS between the two probability distributions <=

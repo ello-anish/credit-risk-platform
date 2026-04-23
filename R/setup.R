@@ -1,88 +1,52 @@
-# R/setup.R — Bootstrap renv and install project dependencies.
+# R/setup.R — Install project R dependencies into the user library.
 #
 # Run from the repo root:
 #   Rscript R/setup.R
 #
-# On first run this initializes renv in the R/ subdirectory, installs the
-# required CRAN packages, and writes renv.lock. Subsequent runs are no-ops
-# when all packages are already installed.
+# The official spec called for renv, but renv-project bootstrap fails under
+# Rscript when the CWD is the repo root (R's .Rprofile gets skipped), and on
+# this Windows-only target the renv workflow added friction without value.
+# We install directly into ``%LOCALAPPDATA%\R\win-library\<version>\`` which
+# is (a) writable without admin, (b) findable by every Rscript invocation
+# that adds it to ``.libPaths()``, and (c) easy to clean up.
 
-# ---- Locate repo root robustly (works under Rscript, source(), or interactive) ----
-get_script_dir <- function() {
-  args <- commandArgs(trailingOnly = FALSE)
-  file_arg <- grep("^--file=", args, value = TRUE)
-  if (length(file_arg) > 0) {
-    return(dirname(normalizePath(sub("^--file=", "", file_arg[1]), winslash = "/")))
-  }
-  if (!is.null(sys.frames()) && length(sys.frames()) >= 1 &&
-      !is.null(sys.frame(1)$ofile)) {
-    return(dirname(normalizePath(sys.frame(1)$ofile, winslash = "/")))
-  }
-  # Fallback: assume CWD is repo root and this file is R/setup.R
-  return(normalizePath("R", winslash = "/", mustWork = FALSE))
+# ---- User-writable library path ----
+user_lib <- file.path(Sys.getenv("LOCALAPPDATA"),
+                      "R", "win-library",
+                      paste(R.version$major, strsplit(R.version$minor, "\\.")[[1]][1], sep = "."))
+if (!dir.exists(user_lib)) {
+  dir.create(user_lib, recursive = TRUE, showWarnings = FALSE)
+  cat("Created user library:", user_lib, "\n")
 }
-
-r_dir <- get_script_dir()
-cat("R dir (renv project):", r_dir, "\n")
-setwd(r_dir)
-
-# ---- Bootstrap renv itself ----
-if (!requireNamespace("renv", quietly = TRUE)) {
-  install.packages("renv", repos = "https://cloud.r-project.org")
-}
-
-# ---- Init renv if not already initialised ----
-if (!file.exists("renv.lock")) {
-  cat("Initializing renv (bare, no dependency discovery)...\n")
-  renv::init(bare = TRUE, restart = FALSE)
-}
-
-# Activate renv for this session
-suppressMessages(renv::activate())
+.libPaths(c(user_lib, .libPaths()))
+cat("Using library:", user_lib, "\n")
 
 # ---- Required packages ----
 pkgs <- c(
   # DB + I/O
-  "DBI",
-  "RPostgres",
-  "arrow",
-  "jsonlite",
-  "yaml",
+  "DBI", "RPostgres", "arrow", "jsonlite", "yaml",
   # Core + modelling
-  "tidyverse",
-  "scorecard",
-  "logistf",
-  "betareg",
-  "pROC",
-  "ResourceSelection",
-  "survival",
-  # MLOps + tests
-  "mlflow",
+  "dplyr", "tidyr", "readr", "stringr", "purrr", "ggplot2",
+  "scorecard", "logistf", "betareg",
+  "pROC", "ResourceSelection", "survival",
+  # Tests
   "testthat"
 )
 
-installed <- rownames(installed.packages())
+installed <- rownames(installed.packages(lib.loc = user_lib))
 to_install <- setdiff(pkgs, installed)
 
 if (length(to_install) > 0) {
-  cat("Installing R packages:", paste(to_install, collapse = ", "), "\n")
-  install.packages(to_install, repos = "https://cloud.r-project.org")
-} else {
-  cat("All R packages already installed.\n")
+  cat("Installing:", paste(to_install, collapse = ", "), "\n")
+  install.packages(to_install, lib = user_lib,
+                   repos = "https://cloud.r-project.org")
 }
 
-# ---- Snapshot lockfile (best-effort) ----
-tryCatch({
-  renv::snapshot(prompt = FALSE)
-  cat("renv.lock updated.\n")
-}, error = function(e) {
-  cat("renv::snapshot warning:", conditionMessage(e), "\n")
-})
-
-# ---- Summary ----
-installed_now <- installed.packages()
-have <- intersect(pkgs, rownames(installed_now))
-cat("\n--- R setup complete ---\n")
-if (length(have) > 0) {
-  print(installed_now[have, c("Package", "Version"), drop = FALSE])
+cat("\n--- R setup complete — package status ---\n")
+for (p in pkgs) {
+  status <- tryCatch({
+    suppressPackageStartupMessages(loadNamespace(p, lib.loc = user_lib))
+    "OK"
+  }, error = function(e) "MISSING")
+  cat(sprintf("  %-20s %s\n", p, status))
 }

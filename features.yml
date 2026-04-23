@@ -1,0 +1,100 @@
+generated_at: '2026-04-24T03:12:00.968385'
+iv_threshold:
+  iv_min: 0.02
+  iv_max: 0.5
+counts:
+  numeric_candidates: 14
+  categorical_candidates: 6
+  kept: 9
+  dropped_for_iv: 11
+  dropped_for_leakage: 18
+kept_features:
+- feature: grade
+  iv: 0.49408584422583185
+- feature: int_rate
+  iv: 0.4658504123534583
+- feature: fico_mid
+  iv: 0.12179552737458896
+- feature: dti
+  iv: 0.07761227650165661
+- feature: verification_status
+  iv: 0.048584848302753336
+- feature: loan_amnt
+  iv: 0.04106272123727608
+- feature: installment
+  iv: 0.03828335139301985
+- feature: annual_inc_log
+  iv: 0.02615909363511668
+- feature: inq_last_6mths
+  iv: 0.021883454706905885
+dropped_for_iv:
+- feature: sub_grade
+  iv: 0.5320305002039329
+  reason: IV 0.532 > 0.5 (likely leakage)
+- feature: home_ownership
+  iv: 0.019657756174680057
+  reason: IV 0.020 < 0.02
+- feature: revol_util
+  iv: 0.016069392804534358
+  reason: IV 0.016 < 0.02
+- feature: open_acc
+  iv: 0.013058971847128559
+  reason: IV 0.013 < 0.02
+- feature: purpose
+  iv: 0.012833683908231839
+  reason: IV 0.013 < 0.02
+- feature: emp_length
+  iv: 0.01103531275053937
+  reason: IV 0.011 < 0.02
+- feature: revol_bal
+  iv: 0.0036153224963221616
+  reason: IV 0.004 < 0.02
+- feature: total_acc
+  iv: 0.0022575435237902554
+  reason: IV 0.002 < 0.02
+- feature: delinq_2yrs
+  iv: 0.0006910682581850642
+  reason: IV 0.001 < 0.02
+- feature: pub_rec
+  iv: 0.0001219426717347825
+  reason: IV 0.000 < 0.02
+- feature: term_months
+  iv: 0.0
+  reason: IV 0.000 < 0.02
+dropped_for_leakage:
+- column: recoveries
+  reason: post-origination — recovery amount (used in LGD target)
+- column: collection_recovery_fee
+  reason: post-origination — collection recovery fee
+- column: last_pymnt_d
+  reason: post-origination — last payment date
+- column: last_pymnt_amnt
+  reason: post-origination — last payment amount
+- column: total_pymnt
+  reason: post-origination — cumulative payments
+- column: total_pymnt_inv
+  reason: post-origination — cumulative payments to investors
+- column: total_rec_int
+  reason: post-origination — cumulative interest received
+- column: total_rec_late_fee
+  reason: post-origination — late fee received
+- column: total_rec_prncp
+  reason: post-origination — cumulative principal received
+- column: next_pymnt_d
+  reason: post-origination — scheduled next payment
+- column: last_credit_pull_d
+  reason: post-origination — last credit pull
+- column: out_prncp
+  reason: post-origination — outstanding principal
+- column: out_prncp_inv
+  reason: post-origination — outstanding principal (investor)
+- column: loan_status
+  reason: target derivative — would leak outcome
+- column: loan_status_raw
+  reason: target derivative
+- column: default_flag
+  reason: the target itself
+- column: lgd
+  reason: LGD target (not PD feature)
+- column: issue_d
+  reason: raw string form of issue_date — use parsed column only
